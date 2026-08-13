@@ -68,15 +68,22 @@ networks:
 
 **Option B — connect via published host ports (no compose changes):**
 
-Point the other project's config at the host instead of a container
-hostname:
+Point the other project's config at the Docker network gateway IP (which routes to the host). Find the gateway IP with:
+
+```bash
+docker network inspect shared-services --format '{{(index .IPAM.Config 0).Gateway}}'
+```
+
+Then use that IP in your config (e.g., if the output is `172.18.0.1`):
 
 ```
-DB_HOST=host.docker.internal   # or localhost, if running outside Docker
+DB_HOST=172.18.0.1
 DB_PORT=3306
-REDIS_HOST=host.docker.internal
+REDIS_HOST=172.18.0.1
 REDIS_PORT=6379
 ```
+
+If the other project is not running in Docker (bare host process), use `localhost` instead since the ports are published to the host.
 
 ## Creating a database for a project
 
