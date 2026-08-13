@@ -105,6 +105,24 @@ that's a one-time system-level check outside this repo's scope.
      changes needed in the other project.
 - How to create a new project's database/user on demand.
 
+## Proposed File Structure
+
+```
+core/
+├── docker-compose.yml      # mysql + redis services, shared-services network, volume
+├── .env.example            # committed template: MYSQL_ROOT_PASSWORD, MYSQL_PORT, REDIS_PORT
+├── .env                     # git-ignored, actual local secrets/ports
+├── .gitignore               # ignores .env
+├── README.md                # what this is, start/stop, how other projects connect
+└── docs/
+    └── superpowers/
+        └── specs/
+            └── 2026-08-13-shared-services-design.md   # this design doc
+```
+
+No `mysql/init/` or other provisioning-script directories are included,
+since database/user creation is on-demand per the scope above.
+
 ## Out of scope
 
 - Migrating bortex, farsons, or any other existing project to use this
