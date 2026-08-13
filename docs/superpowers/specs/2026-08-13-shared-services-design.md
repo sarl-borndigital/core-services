@@ -90,12 +90,35 @@ that's a one-time system-level check outside this repo's scope.
 - `.env.example` (committed): documents the same keys with placeholder/
   default values
 
+### core.sh utility script
+
+A `core.sh` wrapper script at the repo root provides short commands for the
+common Docker Compose operations, so you don't need to remember compose
+flags:
+
+| Command                | Action                                              |
+|-------------------------|------------------------------------------------------|
+| `./core.sh start`       | `docker compose up -d`                               |
+| `./core.sh stop`        | `docker compose stop`                                 |
+| `./core.sh restart`     | `docker compose restart`                              |
+| `./core.sh down`        | `docker compose down` (stops and removes containers, keeps volumes) |
+| `./core.sh status`      | `docker compose ps`                                   |
+| `./core.sh logs [svc]`  | `docker compose logs -f [svc]` (all services if omitted) |
+| `./core.sh mysql`       | opens a `mysql` shell in `core-mysql` as root         |
+| `./core.sh redis`       | opens a `redis-cli` shell in `core-redis`             |
+
+The script is a thin wrapper: it `cd`s to its own directory (so it works
+regardless of caller's cwd) and dispatches on `$1` to the corresponding
+`docker compose`/`docker exec` invocation. Unknown/missing commands print
+usage and exit non-zero. It relies on the compose project's `.env` for
+credentials, so `mysql`/`redis` subcommands don't hardcode passwords.
+
 ### Documentation
 
 `README.md` at the repo root explains:
 
 - What this stack is and when to use it
-- How to start/stop it (`docker compose up -d`, `docker compose down`)
+- How to start/stop it via `core.sh` (or raw `docker compose` commands)
 - How another project connects, both ways:
   1. Network-attach: add `shared-services` as an external network in the
      other project's compose file, attach the app service, point
@@ -110,6 +133,7 @@ that's a one-time system-level check outside this repo's scope.
 ```
 core/
 ├── docker-compose.yml      # mysql + redis services, shared-services network, volume
+├── core.sh                  # executable wrapper: start/stop/restart/down/status/logs/mysql/redis
 ├── .env.example            # committed template: MYSQL_ROOT_PASSWORD, MYSQL_PORT, REDIS_PORT
 ├── .env                     # git-ignored, actual local secrets/ports
 ├── .gitignore               # ignores .env
