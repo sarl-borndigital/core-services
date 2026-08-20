@@ -12,8 +12,8 @@ change you make in that project's own repo.
 
 | Service | Container name | Image           | Host port (default) |
 |---------|-----------------|-----------------|----------------------|
-| mysql   | `core-mysql`    | `mysql:8.0`     | `3306` (`MYSQL_PORT`) |
-| redis   | `core-redis`    | `redis:7-alpine`| `6379` (`REDIS_PORT`) |
+| mysql   | `core-mysql`    | `mysql:8.0`     | `3310` (`MYSQL_PORT`) |
+| redis   | `core-redis`    | `redis:7-alpine`| `6380` (`REDIS_PORT`) |
 
 Both are attached to a Docker bridge network named `shared-services`,
 created by this stack. `restart: unless-stopped` brings them back
