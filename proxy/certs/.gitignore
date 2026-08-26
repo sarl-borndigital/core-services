@@ -1,0 +1,3 @@
+# Generated at container start: local CA + per-domain leaf certificates.
+*
+!.gitignore
