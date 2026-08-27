@@ -31,6 +31,29 @@ services:
     networks:
       - shared-services
 
+  proxy:
+    build:
+      context: ./proxy
+    image: core-proxy:local
+    container_name: core-proxy
+    restart: unless-stopped
+    ports:
+      - "${PROXY_HTTP_PORT:-80}:80"
+      - "${PROXY_HTTPS_PORT:-443}:443"
+    volumes:
+      # One directory per intercepted domain; the directory name is the domain.
+      - ./proxy/sites:/srv/sites:ro
+      # Generated CA + leaf certificates, kept on the host so the CA survives
+      # restarts and can be installed into your trust store.
+      - ./proxy/certs:/etc/nginx/certs
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/_core_health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - shared-services
+
 networks:
   shared-services:
     name: shared-services

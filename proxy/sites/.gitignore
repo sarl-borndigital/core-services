@@ -1,0 +1,5 @@
+# Staged content is local state: which domains you intercept and what you put
+# in them is per-machine. The directory itself is tracked so the bind mount
+# has somewhere to point on a fresh clone.
+*
+!.gitignore
