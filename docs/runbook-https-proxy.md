@@ -69,6 +69,49 @@ curl -sI http://example.com/assets/index.css      # 301 to https
 
 No `-k` anywhere. Needing it means the CA is not installed.
 
+## Windows client / WSL2 server
+
+If the server (this stack) runs in WSL2 but the browser is the **Windows**
+host, the steps above are not enough — they only touch WSL's own
+`/etc/hosts` and Linux trust stores, which the Windows browser never reads.
+`https://localhost` itself works unchanged (Docker Desktop's WSL2 backend
+forwards published ports to Windows), so only the domain resolution and CA
+trust need doing a second time, on the Windows side.
+
+**1. Resolve the domain on Windows too.** `core.sh proxy add` only edits the
+WSL `/etc/hosts`; add the same line to Windows' hosts file, from an
+**elevated** PowerShell:
+
+```powershell
+Add-Content -Path $env:SystemRoot\System32\drivers\etc\hosts -Value "127.0.0.1`texample.com"
+```
+
+Or edit `C:\Windows\System32\drivers\etc\hosts` directly with Notepad run as
+Administrator. `127.0.0.1` is correct even though the proxy runs inside
+WSL2 — Docker Desktop forwards it from Windows' own loopback.
+
+**2. Trust the CA in Windows' stores.** The cert lives inside the WSL
+filesystem; reach it from Windows via `\\wsl.localhost\<distro>\...` (this
+machine's distro: `\\wsl.localhost\Ubuntu\`) prefixed onto the repo path,
+e.g. `\\wsl.localhost\Ubuntu\home\<user>\projects\core-services\proxy\certs\coreLocalCA.pem`.
+
+- **Edge / Chrome** read the Windows certificate store. Import with
+  `certutil.exe` (no admin needed — this targets the per-user store):
+  ```powershell
+  certutil.exe -user -addstore -f "ROOT" "\\wsl.localhost\Ubuntu\path\to\proxy\certs\coreLocalCA.pem"
+  ```
+  Or via GUI: double-click the `.pem`, "Install Certificate" -> Current
+  User -> "Place all certificates in the following store" -> Trusted Root
+  Certification Authorities.
+- **Firefox on Windows** ignores the Windows store and manages its own, the
+  same as on Linux: Settings -> Privacy & Security -> Certificates -> View
+  Certificates -> Authorities -> Import, and select the `.pem` over the
+  same `\\wsl.localhost\...` path.
+
+Restart the browser afterwards. Re-run whenever the CA is regenerated (see
+"Start over on certificates" below) — a reissued CA is not the one Windows
+already trusts.
+
 ## Routine tasks
 
 | Task | Command |
